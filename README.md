@@ -5,51 +5,76 @@ Também realiza a extração automática de imagens, tratamento de conteúdo e g
 
 ---
 
-## 🚀 Como funciona
+## 🚀 Funcionalidades
 
-O fluxo do sistema segue as etapas abaixo:
+### ✅ Já implementado
+
+* [x] Leitura de arquivos `.docx`
+* [x] Conversão de `.docx` para HTML usando `mammoth`
+* [x] Preservação da estrutura de tabelas
+* [x] Extração automática de imagens
+* [x] Salvamento das imagens em `/output/imagens`
+* [x] Ajuste automático dos caminhos das imagens no HTML
+* [x] Identificação das tabelas do documento
+* [x] Separação entre cabeçalho e lições
+* [x] Processamento das linhas (`<tr>`) como telas
+* [x] Extração do conteúdo da segunda coluna (`td[1]`)
+* [x] Geração automática de arquivos HTML
+* [x] Organização das telas por lição em pastas
+* [x] Identificação do tipo de tela via `<strong>`
+* [x] Log no console com tipo da tela
+
+---
+
+### 🚧 Em desenvolvimento / melhorias futuras
+
+* [ ] Implementar processamento do cabeçalho (`CriarCabecalho`)
+* [ ] Criar templates HTML padronizados
+* [ ] Interface gráfica (upload de arquivo)
+* [ ] CLI interativa (parâmetros via terminal)
+* [ ] Exportação para JSON
+* [ ] Exportação para PDF
+* [ ] Validação automática da estrutura do DOCX
+* [ ] Sistema de logs detalhados
+* [ ] Tratamento avançado de erros
+* [ ] Suporte a múltiplos formatos além de `.docx`
+
+---
+
+## 🚀 Como funciona
 
 ### 1. Leitura e Conversão do DOCX
 
 * O arquivo `.docx` é carregado
-* Utiliza a biblioteca `mammoth` para converter o conteúdo em HTML
-* Mantém a estrutura de tabelas do documento original
+* Conversão para HTML usando `mammoth`
+* Estrutura de tabelas mantida
 
-### 2. Extração e Tratamento de Imagens
+### 2. Extração de Imagens
 
-* Todas as imagens são extraídas automaticamente
-* Salvas no diretório:
+* Imagens extraídas automaticamente
+* Salvas em:
   /output/imagens
-* Os caminhos das imagens são ajustados no HTML gerado
 
 ### 3. Identificação das Tabelas
 
-* **Tabela 0** → Cabeçalho do documento
+* **Tabela 0** → Cabeçalho
 * **Demais tabelas** → Lições
 
 ### 4. Processamento das Lições
 
-Para cada tabela (lição):
+* Cada `<tr>` representa uma tela
+* Primeira linha ignorada
+* Conteúdo vem da segunda coluna
 
-* Cada linha (`<tr>`) representa uma tela
-* A primeira linha é ignorada (título da lição)
-* O conteúdo utilizado é da **segunda coluna (`td[1]`)**
-
-### 5. Geração das Telas HTML
-
-As telas são geradas automaticamente no seguinte padrão:
+### 5. Geração das Telas
 
 /output/telas/licao{numero}/tela{index}.html
 
-### 6. Identificação do Tipo de Tela
+### 6. Identificação do Tipo
 
-O sistema tenta identificar o tipo da tela buscando no HTML:
-
-```html
+```html id="j4k29c"
 <p><strong>Tipo da Tela</strong></p>
 ```
-
-* O tipo identificado é exibido no console
 
 ---
 
@@ -74,9 +99,7 @@ tela2.html
 
 ## 📦 Instalação
 
-Instale as dependências com:
-
-```bash
+```bash id="7k2m1a"
 npm install mammoth node-html-parser
 ```
 
@@ -84,15 +107,11 @@ npm install mammoth node-html-parser
 
 ## ▶️ Uso
 
-### 1. Defina o caminho do arquivo `.docx`
-
-```js
+```js id="z81c2q"
 const caminho = 'seu-arquivo.docx';
 ```
 
-### 2. Execute o projeto
-
-```bash
+```bash id="w9x3sd"
 node main.js
 ```
 
@@ -100,32 +119,26 @@ node main.js
 
 ## 🧠 Arquitetura do Projeto
 
-### 📌 `main.js`
+### 📌 main.js
 
-* Controla o fluxo principal
-* Orquestra execução das etapas
-* Separa cabeçalho e lições
+* Orquestra o fluxo geral
 
-### 📌 `CarregarArquivoDOCX`
+### 📌 CarregarArquivoDOCX
 
-* Converte DOCX → HTML
-* Extrai imagens
-* Ajusta caminhos
+* DOCX → HTML
+* Extração de imagens
 
-### 📌 `SelecionarTelas`
+### 📌 SelecionarTelas
 
-* Percorre as tabelas das lições
-* Extrai cada linha como uma tela
+* Percorre tabelas
+* Extrai telas
 
-### 📌 `CriarTela`
+### 📌 CriarTela
 
-* Identifica o tipo da tela
-* Gera arquivo HTML final
-* Salva no diretório correto
+* Gera HTML final
 
-### 📌 `CriarCabecalho`
+### 📌 CriarCabecalho
 
-* Estrutura preparada
 * Ainda não implementado
 
 ---
@@ -140,49 +153,34 @@ Extração de Imagens
 ↓
 Leitura das Tabelas
 ↓
-Separação (Cabeçalho / Lições)
+Separação
 ↓
-Processamento das Linhas
+Processamento
 ↓
-Geração das Telas HTML
+Geração de Telas
 ↓
-Organização em Pastas
+Organização
 
 ---
 
 ## ⚠️ Requisitos do DOCX
 
-Para o sistema funcionar corretamente, o arquivo deve:
+* Deve conter tabelas
+* Cada tabela = 1 lição
+* Cada linha = 1 tela
+* Conteúdo na segunda coluna
+* Tipo opcional:
 
-* Estar estruturado em **tabelas**
-* Cada tabela representar uma **lição**
-* Cada linha representar uma **tela**
-* O conteúdo da tela deve estar na **segunda coluna**
-* (Opcional) O tipo da tela deve estar no formato:
-
-```html
+```html id="x7m3kl"
 <p><strong>Tipo da Tela</strong></p>
 ```
 
 ---
 
-## 💡 Melhorias Futuras
-
-* Implementar processamento do cabeçalho
-* Criar templates HTML padronizados
-* Exportação para JSON
-* Exportação para PDF
-* Interface gráfica (upload de arquivo)
-* CLI interativa
-* Validação automática da estrutura do DOCX
-* Logs detalhados de execução
-
----
-
 ## 📌 Observações
 
-* Sistema voltado para automação de conteúdo educacional
-* Ideal para materiais EAD estruturados
-* Arquitetura pronta para expansão
+* Voltado para automação de conteúdo educacional
+* Ideal para materiais EAD
+* Estrutura pronta para escalar
 
 ---
