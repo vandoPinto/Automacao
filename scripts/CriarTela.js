@@ -1,38 +1,3 @@
-/**
- * Responsável por gerar arquivos HTML individuais (telas).
- *
- * Funcionalidades:
- * - Cria estrutura de pastas automaticamente:
- *   /output/telas/licao{n}/
- * - Salva cada tela como um arquivo HTML
- * - Identifica o tipo da tela via conteúdo HTML
- *
- * Identificação de tipo:
- * - Busca padrão: <p><strong>Tipo</strong></p>
- * - Realiza:
- *   - Decodificação HTML
- *   - Limpeza de caracteres
- *
- * Logs:
- * - Exibe no console:
- *   - Número da lição
- *   - Número da tela
- *   - Tipo identificado
- *
- * Tratamento de erros:
- * - Protege criação de diretórios
- * - Protege escrita de arquivos
- *
- * Parâmetros:
- * @param {number} numeroLicao
- * @param {number} index
- * @param {string} conteudo
- * @param {string} caminhoBaseSaida
- *
- * Observação:
- * - Módulo preparado para integração com templates futuramente
- */
-
 const path = require("path");
 const fs = require("fs/promises");
 
@@ -97,8 +62,8 @@ async function CriarTela(numeroLicao, index, conteudo, caminhoBaseSaida) {
             // 👉 Remover imagens do texto
             let conteudoSemImagem = conteudo.replace(/<img[\s\S]*?>/gi, "");
 
-            // 👉 Remover tipo
-            conteudoSemImagem = conteudoSemImagem.replace(/<p><strong>[^<]*<\/strong><\/p>/i, "");
+            // 👉 Remover linha de tipo (Busca padrão: <p><strong>Tipo</strong></p>)
+            conteudoSemImagem = conteudoSemImagem.replace(regexTipo, "");
 
             const textos = conteudoSemImagem.trim();
             const imagensHTML = imagens.join("\n");
