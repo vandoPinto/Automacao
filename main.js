@@ -1,27 +1,46 @@
 /**
- * Lê um arquivo .docx, converte seu conteúdo para HTML e extrai todas as tabelas presentes no documento.
- * 
- * A primeira tabela é tratada como cabeçalho e enviada para a função `CriarCabecalho`.
- * As demais tabelas são consideradas lições e processadas pela função `SelecionarTelas`,
- * recebendo também o índice correspondente.
- * 
- * Durante o processamento, o conteúdo interno de cada tabela é armazenado em um array
- * e, ao final, a quantidade total de tabelas encontradas é exibida no console.
- * 
- * Em caso de erro na leitura ou processamento do arquivo, uma mensagem é exibida no console.
+ * Arquivo principal responsável por orquestrar todo o fluxo de processamento do sistema.
+ *
+ * Fluxo executado:
+ * 1. Lê um arquivo .docx a partir de um caminho definido.
+ * 2. Converte o conteúdo do DOCX para HTML utilizando a função `CarregarArquivoDOCX`.
+ * 3. Realiza o parse do HTML com `node-html-parser`.
+ * 4. Extrai todas as tabelas presentes no documento.
+ * 5. Direciona o processamento:
+ *    - Primeira tabela → Cabeçalho (`CriarCabecalho`)
+ *    - Demais tabelas → Lições (`SelecionarTelas`)
+ *
+ * Estrutura de dados:
+ * - Cada tabela representa uma unidade lógica:
+ *   [0] → Cabeçalho
+ *   [1..n] → Lições
+ *
+ * Responsabilidades:
+ * - Controlar o fluxo da aplicação
+ * - Delegar processamento para módulos específicos
+ * - Centralizar tratamento de erro
+ *
+ * Observações:
+ * - O sistema está preparado para expansão (JSON, templates, áudio, etc.)
+ * - Atualmente o arquivo de entrada é fixo (hardcoded)
+ *
+ * Melhorias futuras:
+ * - Entrada dinâmica de arquivo (CLI ou interface)
+ * - Pipeline configurável
+ * - Logs estruturados
  */
 
 const { CarregarArquivoDOCX } = require("./scripts/CarregarArquivoDOCX");
 const { CriarCabecalho } = require("./scripts/CriarCabecalho");
 const { SelecionarTelas } = require("./scripts/SelecionarTelas");
-// const fs = require("fs");
-// const path = require("path");
 const { parse } = require("node-html-parser");
+const path = require("path");
 
-const caminho = './PSI_promoçao da saude da pessoa idosa_v1_AIM_liçao1_DI (1).docx';
+//Criar forma de receber o arquivo sem ser por linha de comando, por exemplo, arrastando o arquivo para o terminal ou usando um prompt de seleção de arquivo
+const arquivo = './PSI_promoçao da saude da pessoa idosa_v1_AIM_liçao1_DI.docx';
+const caminhoBaseSaida = path.resolve(__dirname, "./output");
 
 async function executar() {
-
     // Array para armazenar as tabelas encontradas
     //tabelas[0] - Cabeçalho
     //tabelas[1] - Licão 1
@@ -29,7 +48,7 @@ async function executar() {
     let tabelas = [];
 
     try {
-        const html = await CarregarArquivoDOCX(caminho);
+        const html = await CarregarArquivoDOCX(arquivo, caminhoBaseSaida);
 
         // Faz o parse do HTML
         const root = parse(html);
@@ -45,17 +64,28 @@ async function executar() {
             //A primeira tabela é o cabeçalho, as demais são as lições
             if (index == 0) {
                 CriarCabecalho(parse(tabela.innerHTML));
+                //funcoes para serem implementadas posteriormente:
+                //criar json de configuracao - wbtsis.json
+                //Criar json de modulo princial - wbtsis.json
+                //Criar json de biblioteca - biblioteca.json
+
             } else {
-                SelecionarTelas(parse(tabela.innerHTML), index);
+                // Processa as telas da lição recebe o conteúdo da tabela, o número da lição e 
+                // o caminho base de saída onde vão ser salvas as telas
+                SelecionarTelas(parse(tabela.innerHTML), index, caminhoBaseSaida);
+
+                //funcoes para serem implementadas posteriormente:
+                //Criar templates de tela e atividades
+                //Criar json de licoes - sis01_00.json sis01_01.json ... / sis02_01.json sis02_02.json ...
+                //criar roteiro de som
+                //Criar som
+                //minimificar arquivos
+
             }
-
         });
-
         console.log("main.js - TABELAS ENCONTRADAS:\n", tabelas.length);
-
     } catch (erro) {
         console.error("main.js - ❌ Erro:", erro);
     }
 }
-
 executar();

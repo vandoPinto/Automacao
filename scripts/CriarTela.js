@@ -1,23 +1,42 @@
 /**
- * Cria um arquivo HTML de tela com base no conteúdo fornecido e organiza por lição.
- * 
- * Identifica o tipo da tela buscando um texto em destaque (<strong>) dentro de um parágrafo,
- * e exibe essa informação no console. Caso não encontre, informa que o tipo não foi identificado.
- * 
- * Em seguida, cria (se necessário) a pasta no caminho "./output/telas/licao{numeroLicao}"
- * e salva o conteúdo como um arquivo HTML no formato "tela{index}.html".
- * 
- * Em caso de erro durante a criação da pasta ou escrita do arquivo, exibe uma mensagem no console.
- * 
- * @param {number} numeroLicao - Número da lição à qual a tela pertence.
- * @param {number} index - Índice da tela dentro da lição.
- * @param {string} conteudo - Conteúdo HTML da tela a ser salvo.
+ * Responsável por gerar arquivos HTML individuais (telas).
+ *
+ * Funcionalidades:
+ * - Cria estrutura de pastas automaticamente:
+ *   /output/telas/licao{n}/
+ * - Salva cada tela como um arquivo HTML
+ * - Identifica o tipo da tela via conteúdo HTML
+ *
+ * Identificação de tipo:
+ * - Busca padrão: <p><strong>Tipo</strong></p>
+ * - Realiza:
+ *   - Decodificação HTML
+ *   - Limpeza de caracteres
+ *
+ * Logs:
+ * - Exibe no console:
+ *   - Número da lição
+ *   - Número da tela
+ *   - Tipo identificado
+ *
+ * Tratamento de erros:
+ * - Protege criação de diretórios
+ * - Protege escrita de arquivos
+ *
+ * Parâmetros:
+ * @param {number} numeroLicao
+ * @param {number} index
+ * @param {string} conteudo
+ * @param {string} caminhoBaseSaida
+ *
+ * Observação:
+ * - Módulo preparado para integração com templates futuramente
  */
 
 const path = require("path");
 const fs = require("fs/promises");
 
-async function CriarTela(numeroLicao, index, conteudo) {
+async function CriarTela(numeroLicao, index, conteudo, caminhoBaseSaida) {
 
     const nomeTela = `Tela ${index}`;
 
@@ -26,15 +45,22 @@ async function CriarTela(numeroLicao, index, conteudo) {
     const matchTipo = conteudo.match(regexTipo);
 
     if (matchTipo) {
-        const tipoTela = matchTipo[1].trim();
-        console.log(`criarTela.js - ✅ ${nomeTela} - Tipo: ${tipoTela}`);
+        let tipoTela = matchTipo[1].trim();
+
+        // 👉 Decodifica HTML
+        tipoTela = decodeHTML(tipoTela);
+
+        // 👉 Remove < > se existirem
+        tipoTela = tipoTela.replace(/[<>]/g, "");
+
+        console.log(`criarTela.js - ✅ Licão ${numeroLicao} - ${nomeTela} - Tipo: ${tipoTela}`);
     } else {
         console.log(`criarTela.js - ⚠️ ${nomeTela} sem tipo identificado`);
     }
 
     try {
         // 👉 Caminho absoluto mais seguro
-        const pastaSaida = path.resolve(__dirname, "../output/telas/licao" + numeroLicao);
+        const pastaSaida = path.join(caminhoBaseSaida, "telas", "licao" + numeroLicao);
 
         // 👉 Cria a pasta se não existir
         await fs.mkdir(pastaSaida, { recursive: true });
@@ -51,6 +77,15 @@ async function CriarTela(numeroLicao, index, conteudo) {
     } catch (erro) {
         console.error(`criarTela.js - ❌ Erro ao criar ${nomeTela}:`, erro);
     }
+}
+
+function decodeHTML(str) {
+    return str
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
 }
 
 module.exports = { CriarTela };
