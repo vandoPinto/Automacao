@@ -1,107 +1,87 @@
+/**
+ * Responsável por criar uma tela HTML a partir do conteúdo extraído de um documento.
+ *
+ * Funcionalidades:
+ * - Identifica o tipo de tela a partir do conteúdo (<p><strong>Tipo</strong></p>)
+ * - Normaliza o tipo para corresponder aos componentes cadastrados
+ * - Remove a linha de tipo do conteúdo antes de processar
+ * - Seleciona o componente correspondente ao tipo e processa o HTML
+ * - Cria o diretório de saída automaticamente, se necessário
+ * - Salva a tela processada como arquivo HTML
+ *
+ * Fluxo:
+ * 1. Determina o nome da tela (ex.: "Tela 1")
+ * 2. Busca o tipo de tela no conteúdo usando regex
+ *    - Se encontrado, decodifica HTML e normaliza o tipo
+ *    - Se não encontrado, usa "texto" como padrão
+ * 3. Remove a linha de tipo do conteúdo
+ * 4. Seleciona o componente correspondente ao tipo normalizado
+ * 5. Processa o conteúdo via componente (substituindo placeholders no template)
+ * 6. Cria o diretório de saída (./telas/licaoX) se não existir
+ * 7. Salva o arquivo HTML final no diretório de saída
+ *
+ * Parâmetros:
+ * @param {number} numeroLicao - Número da lição (ex.: 1, 2, 3)
+ * @param {number} index - Índice da tela dentro da lição
+ * @param {string} conteudo - Conteúdo HTML da tela (extraído do DOCX)
+ * @param {string} caminhoBaseSaida - Diretório base onde as telas serão salvas
+ *
+ * Retorno:
+ * @returns {Promise<void>} - Não retorna valor; salva o HTML diretamente no disco
+ *
+ * Observações:
+ * - Se o tipo da tela não estiver cadastrado, o componente "texto" será usado
+ * - Erros de processamento do componente ou escrita em disco são logados no console
+ * - Este módulo depende de:
+ *     - Componentes cadastrados em ComponentesLista.js
+ *     - Funções utilitárias decodeHTML e normalizarTipo
+ */
+
+
 const path = require("path");
 const fs = require("fs/promises");
-
-const templatesCache = {};
-
-async function carregarTemplate(nome) {
-    if (!templatesCache[nome]) {
-        const caminho = path.join(__dirname, "../templates", nome + ".html");
-        templatesCache[nome] = await fs.readFile(caminho, "utf-8");
-    }
-    return templatesCache[nome];
-}
-
-function normalizarTipo(tipo) {
-    return tipo
-        .toLowerCase()
-        .replace(/\s/g, "")
-        .replace(/-/g, "");
-}
-
-function mapearTemplate(tipo) {
-    if (tipo.includes("textocomimagem")) return "textoImagem";
-    if (tipo.includes("textoimportante")) return "importante";
-    if (tipo.includes("textosaibamais")) return "saibamais";
-    if (tipo.includes("textofechamento")) return "fechamento";
-    if (tipo.includes("texto")) return "texto";
-    if (tipo.includes("botao")) return "botao";
-    if (tipo.includes("abas")) return "abas";
-    if (tipo.includes("mininavegacao")) return "mininavegacao";
-    if (tipo.includes("flashcard")) return "flashcard";
-    if (tipo.includes("exercitando")) return "exercicio";
-    if (tipo.includes("audio")) return "audio";
-    if (tipo.includes("apresentacao")) return "apresentacao";
-    if (tipo.includes("introducao")) return "introducao";
-    if (tipo.includes("objetivos")) return "objetivos";
-    if (tipo.includes("capitulo")) return "capitulo";
-
-    return "texto";
-}
+const componentes = require("./ComponentesLista");
+const { decodeHTML, normalizarTipo } = require("./Utils");
 
 async function CriarTela(numeroLicao, index, conteudo, caminhoBaseSaida) {
-
     const nomeTela = `Tela ${index}`;
     const regexTipo = /<p><strong>(.*?)<\/strong><\/p>/i;
     const matchTipo = conteudo.match(regexTipo);
 
+    let tipoNormalizado = "texto"; // padrão
     if (matchTipo) {
-        let tipoTela = decodeHTML(matchTipo[1].trim());
-        tipoTela = tipoTela.replace(/[<>]/g, "");
-
-        const tipoNormalizado = normalizarTipo(tipoTela);
-        const templateNome = mapearTemplate(tipoNormalizado);
-
+        let tipoTela = decodeHTML(matchTipo[1].trim()).replace(/[<>]/g, "");
+        tipoNormalizado = normalizarTipo(tipoTela);
         console.log(`criarTela.js - ✅ Lição ${numeroLicao} - ${nomeTela} - Tipo: ${tipoTela}`);
-
-        try {
-            let template = await carregarTemplate(templateNome);
-
-            // 👉 Extrair imagens
-            const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];
-
-            // 👉 Remover imagens do texto
-            let conteudoSemImagem = conteudo.replace(/<img[\s\S]*?>/gi, "");
-
-            // 👉 Remover linha de tipo (Busca padrão: <p><strong>Tipo</strong></p>)
-            conteudoSemImagem = conteudoSemImagem.replace(regexTipo, "");
-
-            const textos = conteudoSemImagem.trim();
-            const imagensHTML = imagens.join("\n");
-
-            template = template
-                .replace(/{{TEXTOS}}/g, textos)
-                .replace(/{{IMAGENS}}/g, imagensHTML)
-                .replace(/{{EXTRA}}/g, imagensHTML);
-
-            conteudo = template;
-
-        } catch (erro) {
-            console.error("❌ Erro ao aplicar template:", erro);
-        }
-
     } else {
         console.log(`criarTela.js - ⚠️ ${nomeTela} sem tipo identificado`);
     }
 
+    // Remover linha de tipo do conteúdo
+    conteudo = conteudo.replace(regexTipo, "");
+
+    // Encontrar componente e processar
+    const componente = componentes[tipoNormalizado] || componentes["texto"];
+
+    console.log('CriarTela.js - Tipo normalizado pedido', tipoNormalizado);
+    let htmlFinal;
+    try {
+        htmlFinal = await componente(conteudo, numeroLicao, index);
+    } catch (erro) {
+        console.error(`❌ Erro ao processar componente ${tipoNormalizado}:`, erro);
+        htmlFinal = conteudo;
+    }
+
+    // Criar pasta e salvar arquivo
     try {
         const pastaSaida = path.join(caminhoBaseSaida, "telas", "licao" + numeroLicao);
         await fs.mkdir(pastaSaida, { recursive: true });
 
         const caminhoTela = path.join(pastaSaida, `tela${index}.html`);
-        await fs.writeFile(caminhoTela, conteudo, "utf-8");
-
+        await fs.writeFile(caminhoTela, htmlFinal, "utf-8");
     } catch (erro) {
         console.error(`❌ Erro ao criar ${nomeTela}:`, erro);
     }
-}
-
-function decodeHTML(str) {
-    return str
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&amp;/g, "&")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
 }
 
 module.exports = { CriarTela };
