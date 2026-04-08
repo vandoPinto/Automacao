@@ -53,15 +53,19 @@ async function executar() {
         // Faz o parse do HTML
         const root = parse(html);
 
-        // Seleciona todas as tabelas
-        const tables = root.querySelectorAll("table");
+        // Seleciona todas as tabelas, exceto as que est o dentro de outras tabelas
+        const tables = Array.from(root.children)
+            .filter(el => el.tagName === "TABLE");
 
         tables.forEach((tabela, index) => {
+            // console.log('vando main.js - Tabelas encontradas:' + index + ` ` + tabela.innerHTML);
             tabelas.push(tabela.innerHTML); // conteúdo interno
             // se quiser a tabela completa:
             // tabelas.push(tabela.toString());
 
-            //A primeira tabela é o cabeçalho, as demais são as lições
+            //A primeira tabela é o cabeçalho, as demais são os topicos das lições
+            //modificar futuramente para receber do cabecalho o numero da licao e refletir na funcao selecionarTelas, 
+            // para criar as pastas de saida das telas de acordo com o numero da licao, por exemplo, licao1/topico1, licao1/topico2, etc
             if (index == 0) {
                 CriarCabecalho(parse(tabela.innerHTML));
                 //funcoes para serem implementadas posteriormente:

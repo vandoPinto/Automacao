@@ -1,5 +1,11 @@
 // Saibamais.js
 const { carregarTemplate } = require("../../Utils");
+/**
+ * Converte o conteúdo em HTML para o template de saibamais.
+ * 
+ * @param {string} conteudo - Conteúdo em HTML a ser convertido.
+ * @returns {Promise<string>} - HTML gerado a partir do conteúdo.
+ */
 module.exports = async function (conteudo) {
     let template = await carregarTemplate("saibamais");
     const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];

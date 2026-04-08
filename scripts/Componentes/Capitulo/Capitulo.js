@@ -1,5 +1,10 @@
 // Capitulo.js
 const { carregarTemplate } = require("../../Utils");
+/**
+ * Exporta uma função que gera um template HTML para um componente de título
+ * @param {string} conteudo - O conteúdo do componente de título
+ * @returns {Promise<string>} - O template HTML gerado
+ */
 module.exports = async function (conteudo) {
     let template = await carregarTemplate("capitulo");
     const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];

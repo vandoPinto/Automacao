@@ -74,7 +74,7 @@ async function CriarTela(numeroLicao, index, conteudo, caminhoBaseSaida) {
 
     // Criar pasta e salvar arquivo
     try {
-        const pastaSaida = path.join(caminhoBaseSaida, "telas", "licao" + numeroLicao);
+        const pastaSaida = path.join(caminhoBaseSaida, "licao", "topico" + numeroLicao);
         await fs.mkdir(pastaSaida, { recursive: true });
 
         const caminhoTela = path.join(pastaSaida, `tela${index}.html`);

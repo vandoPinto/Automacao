@@ -1,5 +1,5 @@
 /**
- * Responsável por processar uma tabela de lição e extrair suas telas.
+ * Processa uma tabela de lição e extrai suas telas, transformando-as em arquivos HTML.
  *
  * Funcionamento:
  * - Recebe o HTML da tabela da lição já parseado
@@ -7,33 +7,26 @@
  * - Ignora a primeira linha (título da lição)
  * - Para cada linha:
  *   - Extrai a segunda coluna (<td>[1])
- *   - Envia o conteúdo para `CriarTela`
- *
- * Estrutura esperada:
- * - Cada linha representa uma tela
- * - A segunda coluna contém o conteúdo HTML da tela
+ *   - Envia o conteúdo para `CriarTela` para processar e criar o arquivo HTML
  *
  * Responsabilidades:
- * - Transformar tabela em unidades de tela
- * - Delegar criação de arquivos para outro módulo
+ * - Processar a tabela em unidades de tela
+ * - Delegar a criação de arquivos para outro módulo
  *
  * Parâmetros:
- * @param {HTMLElement} licaoHTML
- * @param {number} numeroLicao
- * @param {string} caminhoBaseSaida
- *
- * Retorno:
- * @returns {Array<string>} Linhas da tabela em HTML
- *
- * Observação:
- * - Este módulo atua como ponte entre parsing e geração de arquivos
+ * @param {HTMLElement} licaoHTML - HTML da tabela da lição
+ * @param {number} numeroLicao - Número da lição (ex.: 1, 2, 3)
+ * @param {string} caminhoBaseSaida - Caminho base para onde as telas serão salvas
  */
 
 const { parse } = require("node-html-parser");
 const { CriarTela } = require("./CriarTela");
 
 function SelecionarTelas(licaoHTML, numeroLicao, caminhoBaseSaida) {
-    const trs = licaoHTML.querySelectorAll("tr");
+
+    // Seleciona todas as linhas da tabela, ignorando as que estão dentro de outras tabelas por que sao tabelas de telas
+    const trs = licaoHTML.querySelectorAll("tr:not(tr table tr)");
+
 
     // transforma em array de strings (HTML)
     const linhas = trs.map(tr => tr.toString()); // ou tr.outerHTML
@@ -50,3 +43,4 @@ function SelecionarTelas(licaoHTML, numeroLicao, caminhoBaseSaida) {
 }
 
 module.exports = { SelecionarTelas };
+

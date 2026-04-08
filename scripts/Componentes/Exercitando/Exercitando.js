@@ -1,5 +1,10 @@
 // Exercitando.js
 const { carregarTemplate } = require("../../Utils");
+/**
+ * Exporta uma função que gera um template HTML para um componente de exercício
+ * @param {string} conteudo - O conteúdo do componente de exercício
+ * @returns {Promise<string>} - O template HTML gerado
+ */
 module.exports = async function (conteudo) {
     let template = await carregarTemplate("exercicio");
     const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];

@@ -1,4 +1,14 @@
 // scripts/ComponentesLista.js
+/**
+ * Módulo que agrupa todos os componentes utilizados no projeto.
+ *
+ * Os componentes devem ser importados e exportados para que possam ser utilizados
+ * em outros módulos.
+ *
+ * Exemplo de como utilizar: const Componentes = require("./ComponentesLista");
+ * const apresentacao = Componentes.apresentacao("Este é um exemplo de apresentação");
+ * console.log(apresentacao);
+ */
 module.exports = {
     abas: require("./Componentes/Abas/Abas"),
     apresentacao: require("./Componentes/Apresentacao/Apresentacao"),

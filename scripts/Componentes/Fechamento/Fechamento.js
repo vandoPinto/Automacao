@@ -1,5 +1,12 @@
 // Fechamento.js
 const { carregarTemplate } = require("../../Utils");
+/**
+ * Carrega um template HTML pelo nome do componente e substitui
+ * placeholders com conteúdo extraído do conteúdo.
+ * 
+ * @param {string} conteudo - Conteúdo a ser processado.
+ * @returns {Promise<string>} - HTML gerado a partir do conteúdo do arquivo.
+ */
 module.exports = async function (conteudo) {
     let template = await carregarTemplate("fechamento");
     const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];

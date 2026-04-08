@@ -1,5 +1,10 @@
 // Audio.js
 const { carregarTemplate } = require("../../Utils");
+/**
+ * Gera um template HTML para um componente de áudio
+ * @param {string} conteudo - O conteúdo do componente de áudio
+ * @returns {Promise<string>} - O template HTML gerado
+ */
 module.exports = async function (conteudo) {
     let template = await carregarTemplate("audio");
     const imagens = conteudo.match(/<img[\s\S]*?>/gi) || [];
